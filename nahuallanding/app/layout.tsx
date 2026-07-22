@@ -33,22 +33,28 @@ export const metadata: Metadata = {
     "Bayesian Naive",
     "Claude API",
     "grooming",
-    "ciberseguridad infantil"
+    "ciberseguridad infantil",
+    "Armando Javier Flores Salazar",
+    "Auctorum",
+    "innovación tecnológica"
   ],
-  authors: [{ name: "Equipo Vanguard — Armando Flores & Marco Espinosa" }],
+  authors: [
+    { name: "Armando Javier Flores Salazar — Fundador de Auctorum" },
+    { name: "Marco Espinosa" }
+  ],
   alternates: {
     canonical: siteUrl,
   },
   openGraph: {
     title: "Nahual — Protección Digital para Menores en México",
     description:
-      "El primer sistema en México con 4 capas cognitivas para detectar reclutamiento criminal digital. Análisis heurístico (900 patrones) + Naive Bayes + IA (Claude).",
+      "El primer sistema en México con 4 capas cognitivas para detectar reclutamiento criminal digital. Creado por Armando Javier Flores Salazar (Auctorum).",
     images: [
       {
         url: "/opengraph-image", // Cambia esto por la URL absoluta si está alojada o deja que next genere el default
         width: 1200,
         height: 630,
-        alt: "Nahual Security",
+        alt: "Nahual Security by Armando Javier Flores Salazar",
       }
     ],
     locale: "es_MX",
@@ -60,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Nahual — Detección de reclutamiento criminal en menores",
     description:
-      "4 capas cognitivas · 900 patrones · 99.6% accuracy · Bot WhatsApp + panel web · Privacy-first (Art. 16 CPEUM).",
+      "4 capas cognitivas · 99.6% accuracy · Privacy-first. Por Armando Javier Flores Salazar.",
   },
   robots: {
     index: true,
@@ -78,6 +84,25 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Nahual",
+  "operatingSystem": "Web, WhatsApp, Extension",
+  "applicationCategory": "SecurityApplication",
+  "description": "Sistema de inteligencia artificial con 4 capas cognitivas para detectar reclutamiento criminal y proteger a menores en línea.",
+  "url": siteUrl,
+  "author": {
+    "@type": "Person",
+    "name": "Armando Javier Flores Salazar",
+    "jobTitle": "Fundador",
+    "worksFor": {
+      "@type": "Organization",
+      "name": "Auctorum"
+    }
+  }
+};
+
 export default function RootLayout({
   children
 }: Readonly<{
@@ -85,6 +110,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es-MX" className="scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${mono.variable} bg-carbon-dark font-sans text-cream antialiased`}
       >
