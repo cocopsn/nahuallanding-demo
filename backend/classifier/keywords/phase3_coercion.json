@@ -2,7 +2,7 @@
   "phase": "phase3_coercion",
   "phase_name": "Coerción",
   "description": "Amenazas, ultimátums, intimidación",
-  "total_patterns": 120,
+  "total_patterns": 236,
   "placeholder": false,
   "last_updated": "2026-04-26",
   "patterns": [

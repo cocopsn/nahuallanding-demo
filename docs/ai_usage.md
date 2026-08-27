@@ -33,9 +33,16 @@ El clasificador heurístico (Capa 1), los datasets de keywords, la lógica de ov
 ## 3. Uso en tiempo de ejecución (componente del producto)
 
 ### 3.1 Claude API — Capa 2 del clasificador
-- **Cuándo se invoca:** sólo cuando la Capa 1 heurística da un score ponderado en `[0.3, 0.6]` (zona gris) Y la Fase 3/4 no disparó override.
+- **Cuándo se invoca:** con **cualquiera** de tres disparadores, siempre que la Fase 3/4 no
+  haya disparado override. Es importante ser exacto aquí porque cada disparador implica
+  enviar el texto del usuario a un tercero:
+  1. **Zona gris** — score ponderado en `[0.3, 0.6]`.
+  2. **Hueco heurístico** — score exactamente `0` **y** el texto tiene más de 30 caracteres.
+  3. **Señal débil** — score `< 0.3` **y** el texto contiene alguna de las 34 palabras de
+     activación (`pesos`, `dinero`, `jale`, `matar`, `amenaz`, `fotos`, `nudes`,
+     `extorsion`, …) definidas en `classifier/pipeline.py`.
 - **Qué hace:** analiza el mensaje en español y devuelve `{risk_score, phase, rationale}` en JSON.
-- **Modelo:** `claude-sonnet-4-20250514`.
+- **Modelo:** `claude-sonnet-4-5-20250929` (`classifier/llm_layer.py`, overridable con `ANTHROPIC_MODEL`).
 - **Timeout duro:** 5 segundos. Si se excede, falla silenciosamente y el bot responde con el resultado de la Capa 1.
 - **Privacidad:** el mensaje se envía a la API de Anthropic. No se almacena en Anthropic más allá de la retención estándar del servicio. La BD local de Nahual sólo guarda hash SHA-256 + resumen anonimizado.
 
@@ -62,7 +69,11 @@ El clasificador heurístico (Capa 1), los datasets de keywords, la lógica de ov
 
 ## 5. Principio
 
-> **La IA es un componente, no el producto.** El clasificador heurístico (Capa 1) funciona sin IA y cubre el 100% de los mensajes con un resultado útil. La Capa 2 añade precisión en casos ambiguos pero es opcional y fallable.
+> **La IA es un componente, no el producto.** El clasificador heurístico (Capa 1) funciona
+> sin IA y devuelve siempre un resultado. Medido sobre el suite de verificación estructural
+> (20 casos): la Capa 1 sola acierta **16/20 (80%)**; con la Capa 1.5 bayesiana — que
+> tampoco requiere red — sube a **20/20 (100%)**. Es decir, el sistema alcanza el 100% del
+> suite **sin ninguna llamada a la API**. La Capa 2 añade precisión en casos ambiguos pero es opcional y fallable.
 
 Este principio se aplica también al desarrollo: el equipo entiende cada línea de código que entra al repositorio y puede defender cualquier decisión técnica frente al jurado.
 

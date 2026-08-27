@@ -10,7 +10,7 @@
 |-------|-----------|
 | **Art. 16 CPEUM** | Inviolabilidad de comunicaciones privadas. **Nahual cumple:** sólo analiza datos AUTOINFORMADOS por el usuario; no intercepta. |
 | **Art. 47 LGDNNA** | Protección integral de NNA contra reclutamiento. |
-| **Código Penal Federal (reforma 2026)** | Hasta **18 años** de pena por reclutamiento de menores. |
+| **Código Penal Federal — art. 209 Sextus *(propuesto)*** | Reforma aprobada por la Cámara de Diputados en marzo 2026, **pendiente de publicación en el DOF**. Propone hasta **18 años** por reclutamiento de menores. Mientras no se publique **no es derecho vigente**: no debe citarse como fundamento ante autoridad. Re-verificar el estado en el DOF antes de usar este documento. |
 | **Ley Olimpia** | Difusión no consentida de material íntimo (sextorsión). |
 | **LFPDPPP** | Datos personales de menores: Nahual sólo guarda hashes y resúmenes anonimizados. |
 

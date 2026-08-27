@@ -2,7 +2,7 @@
   "phase": "phase4_explotacion",
   "phase_name": "Explotación",
   "description": "Actividades ilícitas, sextorsión, demanda financiera",
-  "total_patterns": 124,
+  "total_patterns": 175,
   "placeholder": false,
   "last_updated": "2026-04-26",
   "patterns": [

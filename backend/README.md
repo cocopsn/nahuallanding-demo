@@ -4,8 +4,8 @@ API REST + clasificador de 4 capas cognitivas + persistencia anónima +
 PDF forense + observabilidad.
 
 ## Estado en producción
-- **URL:** `http://159.223.187.6:8000`
-- **Swagger:** `http://159.223.187.6/docs`
+- **URL:** detrás del proxy en el droplet. El puerto 8000 **no está expuesto** al exterior (verificado 2026-08-27: filtrado). En local: `http://localhost:8000`.
+- **Swagger:** `http://localhost:8000/docs` en local. La ruta pública no responde hoy (ver README raíz, §Despliegue).
 - **Servicio systemd:** `nahual-backend.service`
 - **Modelo Anthropic:** `claude-sonnet-4-5-20250929`
 - **STT:** Groq Whisper-large-v3
@@ -26,8 +26,9 @@ TEXT
   │   1031 docs entrenados, vocab 6104.
   │   classifier/bayesian.py
   │
-  ├── Capa 2 (LLM): claude-sonnet-4-5-20250929 (zona gris OR
-  │   score=0+keywords OR texto>30 chars)
+  ├── Capa 2 (LLM): claude-sonnet-4-5-20250929. Tres disparadores,
+  │   cualquiera basta: (a) zona gris 0.3–0.6; (b) score==0 Y texto
+  │   >30 chars; (c) score<0.3 Y vocabulario de activación
   │   classifier/llm_layer.py
   │
   └── Capa 3 (Trayectoria): EscalationDetector — riesgo entre
@@ -99,14 +100,17 @@ uvicorn main:app --reload --port 8000
 cd backend
 rm -f nahual.db
 python -m pytest tests/ -q
-# 158/158 verde
+# 163/163 verde (medido 2026-08-27)
 ```
 
 Suites:
 - `test_classifier.py` — 4-fase scoring, override, escalation
 - `test_admin.py` — version, dataset-info, metrics, healthcheck, runtime-info
 - `test_bayesian.py` — train, predict, persist, integration
-- `test_pipeline.py`, `test_webhooks.py`, etc.
+- `test_webhooks.py` — firma HMAC, reintentos, qué dispara y qué no
+- y `test_api`, `test_auth`, `test_legal`, `test_moderation`, `test_phase3`,
+  `test_phase4`, `test_precision`, `test_sessions`, `test_timeseries`
+  (13 archivos en total)
 
 ## Privacy by design
 

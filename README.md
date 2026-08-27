@@ -63,7 +63,7 @@ Si Fase 3 o Fase 4 obtienen score individual ≥ 0.80, el sistema ignora el prom
 
 | Componente | Tecnología |
 |------------|-----------|
-| Bot WhatsApp | Node.js 20 + `@whiskeysockets/baileys` 6.7 |
+| Bot WhatsApp | Node.js ≥ 18 (`engines` de `bot/package.json`) + `@whiskeysockets/baileys` ^6.7.0 |
 | Backend API | Python 3.12+ + FastAPI + Uvicorn |
 | Clasificador Capa 1 | Regex + keyword scoring (**900 patrones**, sin GPU) |
 | Clasificador Capa 1.5 | **Naive Bayes** con n-gramas (1, 2, 3) — aprende del feedback |
@@ -74,7 +74,7 @@ Si Fase 3 o Fase 4 obtienen score individual ≥ 0.80, el sistema ignora el prom
 | PDF | ReportLab |
 | Extensión | Chrome Manifest V3 (v1.3.0) |
 | Panel | HTML + Tailwind CDN + Chart.js + vanilla JS |
-| Reverse proxy | Nginx con rate limiting + security headers |
+| Reverse proxy | Caddy (reemplazó a Nginx; config fuera de este repo) |
 | Deploy | DigitalOcean droplet + systemd |
 
 ---
@@ -181,11 +181,11 @@ curl -X POST http://localhost:8000/analyze \
 
 ```json
 {
-  "risk_score": 0.78,
-  "risk_level": "PELIGRO",
+  "risk_score": 0.37,
+  "risk_level": "ATENCION",
   "phase_detected": "captacion",
-  "phase_scores": {"phase1": 0.85, "phase2": 0.0, "phase3": 0.0, "phase4": 0.0},
-  "categories": ["narco_emoji_sinaloa", "oferta_economica"],
+  "phase_scores": {"phase1": 1.0, "phase2": 0.0, "phase3": 0.0, "phase4": 0.0},
+  "categories": ["captacion", "narco_emoji_cartel_de_sinaloa"],
   "override_triggered": false,
   "llm_used": false
 }
@@ -250,7 +250,10 @@ El endpoint público `GET /contributions/stats` expone agregados (top patrones, 
 
 - Art. 47 LGDNNA — protección contra reclutamiento de menores
 - Art. 16 CPEUM — inviolabilidad de comunicaciones (cumple)
-- Código Penal Federal (reforma 2026) — hasta 18 años por reclutamiento
+- Código Penal Federal — reforma aprobada por la Cámara de Diputados en marzo
+  2026, **pendiente de publicación en el DOF**. Numeración propuesta: art. 209
+  Sextus CPF, hasta 18 años. Mientras no se publique, no es derecho vigente y el
+  sistema la cita marcada como *(propuesto)*.
 - Ley Olimpia — sextorsión
 
 **Reportar:** Policía Cibernética **088** | SIPINNA <https://sipinna.gob.mx> | Línea de la Vida **800-911-2000**
@@ -259,7 +262,15 @@ El endpoint público `GET /contributions/stats` expone agregados (top patrones, 
 
 ## Despliegue en producción
 
-El sistema está corriendo 24/7 en un droplet DigitalOcean (Ubuntu 24.04, 1 vCPU / 1 GB RAM):
+> **Estado verificado el 2026-08-27:** el droplet responde en TCP :80 y :443, pero el
+> puerto 80 devuelve `308 → https://159.223.187.6/` (servido por **Caddy**, no Nginx) y el
+> handshake TLS a la IP desnuda falla con `TLSV1_ALERT_INTERNAL_ERROR` con y sin SNI —
+> Caddy no tiene certificado para una IP. El puerto 8000 está filtrado desde fuera.
+> **En la práctica, ninguna de las URLs de abajo es alcanzable hoy.** `nahualshield.com`
+> es NXDOMAIN y `nahualsec.com` apunta a Vercel (la landing), no al droplet. Se dejan
+> publicadas como referencia de infraestructura, no como servicio disponible.
+
+El droplet DigitalOcean (Ubuntu 24.04, 1 vCPU / 1 GB RAM):
 
 ```
 IP pública:   159.223.187.6
@@ -268,18 +279,18 @@ Swagger:      http://159.223.187.6/docs
 Bot WhatsApp: +52 844 538 7404
 ```
 
-DNS preparado para `nahualshield.com` y `nahualsec.com` (subdominios `panel.` / `api.` / `www.`). HTTPS automático vía `certbot --nginx` cuando el DNS apunte al droplet.
+DNS: `nahualshield.com` **no resuelve** (NXDOMAIN, tampoco `panel.` / `api.` / `www.`) y `nahualsec.com` resuelve a Vercel, donde vive la landing. Para que el panel y la API vuelvan a ser alcanzables hace falta un nombre que apunte al droplet y un certificado emitido para ese nombre; el proxy ya fuerza HTTPS, así que hoy la redirección lleva a un TLS que no completa.
 
 **Servicios systemd:**
 - `nahual-backend.service` — FastAPI + uvicorn :8000
 - `nahual-bot.service` — Node.js + Baileys (WhatsApp)
-- `nginx` — reverse proxy + panel estático + rate limit + security headers
+- `caddy` — reverse proxy + panel estático (**sustituyó a Nginx**; la config no está en este repo)
 
 **Hardening en producción:**
 - API key auth opt-in vía `NAHUAL_API_KEY` en endpoints sensibles (`/alerts*`, `/sessions/*`, `/precision/*`, `/risk-history/*`)
-- Rate limiting per-IP en Nginx: `/analyze` 20/min, `/alert` 15/min, `/transcribe+ocr` 8/min, general 120/min
+- Rate limiting per-IP en el proxy: `/analyze` 20/min, `/alert` 15/min, `/transcribe+ocr` 8/min, general 120/min. **No verificable desde este repo**: la config del proxy no está versionada aquí y el proxy en operación ya no es Nginx sino Caddy.
 - Rate limit per-JID en bot (5 alertas / 60s)
-- Security headers globales: `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `Referrer-Policy strict-origin-when-cross-origin`, `Permissions-Policy locks geolocation/mic/camera`
+- Security headers globales (misma salvedad: config no versionada): `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `Referrer-Policy strict-origin-when-cross-origin`, `Permissions-Policy locks geolocation/mic/camera`
 - SQLite con WAL + retry on lock (5 intentos backoff exponencial)
 - Webhook retry (3 intentos en 5xx/network, 4xx no-retry)
 - Baileys reconnect con backoff exponencial + jitter + cleanup de listeners
@@ -311,11 +322,11 @@ POST /bayesian/predict          # predicción aislada del Naive Bayes (debug)
 Clasificador que **aprende de cada feedback** (`confirm` → train(fase
 detectada), `deny` → train("seguro")) sin reentrenamiento batch. Usa
 n-gramas (1, 2, 3) como features con smoothing de Laplace y persiste
-en JSON atómico. Entrenado con **1031 ejemplos** del bootstrap (836
-patrones del dataset + 75 frases inocuas).
+en JSON atómico. El bootstrap inicial fueron 911 ejemplos (836 patrones del
+dataset + 75 frases inocuas); el feedback acumulado lo llevó a **1031**.
 
-**Distribución de clases:**
-- `seguro` (75) · `captacion` (264) · `enganche` (189) · `coercion` (222) · `explotacion` (161)
+**Distribución de clases** (estado actual de `bayesian_model.json`, suma 1031):
+- `seguro` (165) · `captacion` (269) · `enganche` (190) · `coercion` (233) · `explotacion` (174)
 
 **Score-comparison contra el structural verification suite (sin LLM):**
 - Heurístico solo: 16/20 (80%)
@@ -335,15 +346,17 @@ $ curl -X POST http://159.223.187.6/bayesian/predict \
 ```
 
 ```bash
-$ curl http://159.223.187.6/admin/dataset-info
+$ curl http://localhost:8000/admin/dataset-info
 {
-  "total_patterns": 768,
-  "high_confidence_patterns": 433,
+  "total_patterns": 900,
+  "high_confidence_patterns": 487,
+  "emoji_count": 14,
+  "override_threshold": 0.8,
   "phases": {
-    "phase1": {"name": "Captación",   "patterns": 260, "high_0.8_1.0": 117},
-    "phase2": {"name": "Enganche",    "patterns": 172, "high_0.8_1.0":  59},
-    "phase3": {"name": "Coerción",    "patterns": 194, "high_0.8_1.0": 171},
-    "phase4": {"name": "Explotación", "patterns": 142, "high_0.8_1.0":  86}
+    "phase1": {"name": "Captación",   "patterns": 299, "high_0.8_1.0": 117},
+    "phase2": {"name": "Enganche",    "patterns": 190, "high_0.8_1.0":  59},
+    "phase3": {"name": "Coerción",    "patterns": 236, "high_0.8_1.0": 195},
+    "phase4": {"name": "Explotación", "patterns": 175, "high_0.8_1.0": 116}
   }
 }
 ```
@@ -441,7 +454,7 @@ Sexta tanda de mejoras post-deploy, todas con tests de regresión nuevos
 Cinco capas de mejora aplicadas tras testing en vivo de Marco + audits:
 
 1. **CAPA A — LLM activación extendida**: la Capa 2 ya no espera solo la zona gris (0.3-0.6). Activa en 3 condiciones: zona gris clásica, score=0 con texto >30 chars, o score<0.3 con keywords de dinero/trabajo/amenaza/sextorsión. Cuando el heurístico da 0 y el LLM activa, el LLM tiene 100% del peso (ya no se promedia con 0).
-2. **CAPA B — +102 patrones perspectiva-víctima**: el dataset pasó de 643 → 900 patrones. Cubre `me ofrecieron`, `me pidieron`, `me amenazaron`, `me obligaron`, etc. — la forma en que las víctimas REPORTAN, no solo cómo el agresor habla.
+2. **CAPA B — +102 patrones perspectiva-víctima**: el tramo que aportó esta capa fue 768 → 870. La progresión completa del dataset está en el CHANGELOG: 643 → 768 → 870 → **900**. Cubre `me ofrecieron`, `me pidieron`, `me amenazaron`, `me obligaron`, etc. — la forma en que las víctimas REPORTAN, no solo cómo el agresor habla.
 3. **CAPA C — Normalización avanzada del texto**: chat MX (x→por, q→que, pa→para, toy→estoy), números escritos (quince mil → 15000), formato dinero ($15,000 → $15000, "15 mil" → "15000"), typos (ofresieron → ofrecieron).
 4. **CAPA G — Boost contextual**: 1.30× cuando hay 3+ categorías distintas, 1.50× cuando hay danger combos (`{oferta_economica, perfilamiento}`, `{amenaza, orden_directa}`, `{sextorsion_recibida, sextorsion_chantaje}`).
 5. **CAPA 1.5 — Naive Bayes**: nueva capa que aprende de cada feedback. 1031 docs entrenados, vocab 6104. Mejoró el structural verification suite de **80% → 100%** sin necesidad de LLM.
@@ -459,8 +472,8 @@ Nahual es un MVP de hackathon. Lo enviamos con una lectura honesta de lo que **n
 5. **Falsos positivos posibles.** El panel permite marcar "descartar" y eso retro-alimenta al auto-tuner + Bayesiano. La extensión usa whitelist + scope al chat container para evitar matches en UI/catálogo.
 6. **Falsos negativos posibles.** Lenguaje codificado nuevo puede pasar inadvertido hasta que un operador lo reporte vía `/feedback`. La capa Bayesiana + la LLM mitigan esto.
 7. **Privacy-first, telemetría limitada.** No almacenamos mensajes originales, solo SHA-256 + resumen anonimizado. NO podemos auditar retroactivamente el texto que disparó una alerta — solo los pattern_ids que matchearon.
-8. **HTTPS pendiente.** Producción usa HTTP por IP mientras se configura DNS. HSTS preparado en Nginx, listo para `certbot --nginx` cuando los subdominios apunten al droplet.
-9. **Bayesiano en bootstrap inicial.** El modelo se inicializa con 1031 ejemplos (836 patrones + 75 frases seguras). Su precisión real se solidifica con feedback de usuarios reales — los primeros +30 testers de Marco son la primera ronda de tuning.
+8. **Producción inalcanzable.** El proxy ya fuerza HTTPS, pero no hay certificado válido para la IP y no hay nombre de dominio apuntando al droplet, así que el panel y la API no responden desde fuera. Verificado el 2026-08-27.
+9. **Bayesiano en bootstrap inicial.** El modelo se inicializó con 911 ejemplos (836 patrones + 75 frases seguras) y va en 1031 tras el feedback acumulado. Su precisión real se solidifica con feedback de usuarios reales — los primeros +30 testers de Marco son la primera ronda de tuning.
 
 Si encuentras un caso donde Nahual falla, abre un issue con el texto literal (sin PII de la víctima) y lo agregamos al dataset.
 
@@ -469,7 +482,7 @@ Si encuentras un caso donde Nahual falla, abre un issue con el texto literal (si
 ## Documentación de IA
 
 - **Claude Code** — asistente de programación para boilerplate. Todo el código revisado e integrado por el equipo.
-- **Claude API** — Capa 2 del clasificador (zona gris 0.3–0.6, timeout 5 s). Componente funcional opcional. El sistema funciona sin ella.
+- **Claude API** (`claude-sonnet-4-5-20250929`) — Capa 2 del clasificador. Se invoca con **cualquiera** de tres disparadores: zona gris 0.3–0.6; score 0 con texto > 30 caracteres; o score < 0.3 con vocabulario de dinero/trabajo/amenaza. Timeout 5 s. Componente funcional opcional. El sistema funciona sin ella.
 
 El clasificador heurístico (Capa 1) y los datasets fueron investigados y construidos por el equipo basándose en fuentes verificadas (Colmex, El País, FinCEN, CSIS, REDIM, ONC).
 

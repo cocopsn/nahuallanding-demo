@@ -101,7 +101,7 @@ def require_api_key(provided: str | None = Security(API_KEY_HEADER)) -> None:
     """Gate sensitive endpoints behind the X-API-Key header.
 
     When `NAHUAL_API_KEY` is unset or empty, auth is disabled — keeps
-    dev/test environments and the 126-test suite working without
+    dev/test environments and the test suite (163 tests) working without
     changes. Once the env var is set, every protected endpoint demands
     a matching header or returns 403.
     """

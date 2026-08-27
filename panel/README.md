@@ -1,7 +1,9 @@
 # 📊 Nahual Panel Web
 
 Single-file dashboard HTML + Tailwind CDN + Chart.js + vanilla JS.
-Auto-refresh cada 5s. Hosted en producción en `http://159.223.187.6/`.
+Auto-refresh cada 5s. Servido por el proxy del droplet; **verificado el 2026-08-27, la
+URL pública no responde** (redirección forzada a un HTTPS sin certificado válido para la
+IP). Ver README raíz, §Despliegue en producción.
 
 ## Features
 

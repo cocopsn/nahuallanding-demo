@@ -65,8 +65,10 @@ DOM mutations → MutationObserver → scanNode (text nodes)
 | `última oportunidad` | `gift card / robux gratis` (con verbo de propuesta) |
 | `te va a pesar` | `pásate a Discord/Telegram, pásame tu user` |
 
-26 regex en total. Whitelist de 5 frases UI/store que NO disparan
-("Buy Roblox Gift Cards", cookies, terms, news headlines).
+26 regex en total (12 de Fase 3 + 14 de Fase 4). Whitelist de **8** patrones
+UI/store que NO disparan: gift cards, Robux, canje de códigos, tarjeta de regalo
+con monto, cookies/términos/privacidad, iniciar sesión o crear cuenta, Discord
+Nitro / server boost, y encabezados de noticia (`noticia:`, `reportaje`, …).
 
 ## Popup (v1.2)
 
@@ -108,6 +110,6 @@ DOM mutations → MutationObserver → scanNode (text nodes)
 ## Source
 
 `extension/content.js` — todo en un solo archivo con MutationObserver
-+ regexes + overlay UI. ~250 líneas.
++ regexes + overlay UI. **399 líneas**.
 
 Ver [README.md raíz](../README.md) para arquitectura completa.

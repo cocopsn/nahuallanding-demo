@@ -2,7 +2,7 @@
   "phase": "phase1_captacion",
   "phase_name": "Captación",
   "description": "Ofertas falsas, narcocultura, glorificación criminal",
-  "total_patterns": 173,
+  "total_patterns": 299,
   "placeholder": false,
   "last_updated": "2026-04-26",
   "patterns": [

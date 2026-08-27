@@ -67,13 +67,63 @@ def test_admin_version_is_public_even_with_auth(tmp_path):
         assert c.get("/admin/version").status_code == 200
 
 
+def _contar_patrones_en_disco():
+    """Cuenta los patrones leyendo los JSON directamente.
+
+    Sirve de contraparte independiente al endpoint: si alguien agrega
+    patrones y no actualiza el metadato, o si el endpoint cambia de forma
+    de contar, la diferencia sale aqui en vez de en un README.
+
+    Verifica ademas que el campo `total_patterns` que cada archivo declara
+    sobre si mismo coincida con la longitud real de su array `patterns` —
+    el 2026-08-27 los cuatro declaraban 173/146/120/124 cuando tenian
+    299/190/236/175.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    base = _Path(__file__).resolve().parent.parent / "classifier" / "keywords"
+    por_fase, alta = {}, 0
+    for fase, nombre in (
+        ("phase1", "phase1_captacion.json"),
+        ("phase2", "phase2_enganche.json"),
+        ("phase3", "phase3_coercion.json"),
+        ("phase4", "phase4_explotacion.json"),
+    ):
+        d = _json.loads((base / nombre).read_text(encoding="utf-8"))
+        pats = d.get("patterns", [])
+        por_fase[fase] = len(pats)
+        assert d.get("total_patterns") == len(pats), (
+            f"{nombre} declara total_patterns={d.get('total_patterns')} "
+            f"pero su array patterns tiene {len(pats)}"
+        )
+        for pat in pats:
+            w = pat.get("weight")
+            if isinstance(w, (int, float)) and w >= 0.8:
+                alta += 1
+    return {"total": sum(por_fase.values()), "por_fase": por_fase, "alta_confianza": alta}
+
+
 # ---------------- /admin/dataset-info ----------------
 
 
 def test_admin_dataset_info_returns_phase_counts(tmp_path):
     with _client(tmp_path) as c:
         body = c.get("/admin/dataset-info").json()
-        assert body["total_patterns"] > 500  # we shipped 643 in polish-2
+        # El conteo se ata a la fuente de verdad, no a un umbral suelto.
+        # Un `> 500` pasaba igual con 563, 643, 768, 870 o 900, y por eso la
+        # documentacion pudo derivar tres versiones sin que nada fallara.
+        esperado = _contar_patrones_en_disco()
+        assert body["total_patterns"] == esperado["total"], (
+            f"/admin/dataset-info dice {body['total_patterns']} pero los JSON "
+            f"de keywords tienen {esperado['total']}"
+        )
+        for fase, n in esperado["por_fase"].items():
+            assert body["phases"][fase]["patterns"] == n, (
+                f"{fase}: el endpoint dice {body['phases'][fase]['patterns']}, "
+                f"el archivo tiene {n}"
+            )
+        assert body["high_confidence_patterns"] == esperado["alta_confianza"]
         assert body["high_confidence_patterns"] > 0
         assert body["override_threshold"] == 0.80
         # Phase 3 must be the densest in high_0.8_1.0 (override grade).

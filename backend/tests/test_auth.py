@@ -1,7 +1,7 @@
 """API key auth (security correction #1).
 
 The auth dependency is opt-in: when NAHUAL_API_KEY is empty/unset, every
-endpoint behaves as before (this keeps the prior 126-test suite green).
+endpoint behaves as before (this keeps the rest of the suite green).
 When the env var is set, sensitive endpoints reject requests without a
 matching X-API-Key header with HTTP 403.
 """

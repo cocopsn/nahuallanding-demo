@@ -361,7 +361,7 @@ PDF: Folio NAH-2026-XXXX, datos del incidente, análisis, recomendaciones, marco
 **México:**
 - En 2024, entre 388 y 460 mil menores fueron reclutados por el crimen organizado (REDIM)
 - 46,000 menores reportaron ser obligados a unirse a pandillas (ONC 2015)
-- En 2026, Cámara de Diputados reformó Código Penal: hasta 18 años de pena por reclutamiento de menores
+- En marzo 2026 la Cámara de Diputados **aprobó** una reforma al Código Penal Federal que propone hasta 18 años por reclutamiento de menores (art. 209 Sextus propuesto). **Pendiente de publicación en el DOF** — no es derecho vigente hasta entonces.
 - La ONU activó mecanismo excepcional por desapariciones vinculadas a captación digital
 
 **Digital:**
@@ -397,7 +397,7 @@ PDF: Folio NAH-2026-XXXX, datos del incidente, análisis, recomendaciones, marco
 
 - **Art. 47 LGDNNA:** Protección contra reclutamiento de menores
 - **Art. 16 CPEUM:** Inviolabilidad de comunicaciones (Nahual cumple: solo analiza datos autoinformados)
-- **Código Penal Federal (reforma 2026):** Hasta 18 años por reclutamiento de menores
+- **Código Penal Federal, art. 209 Sextus *(propuesto)*:** hasta 18 años por reclutamiento de menores. Aprobado por la Cámara de Diputados en marzo 2026, **pendiente de DOF**.
 - **Ley Olimpia:** Difusión no consentida de material íntimo (en casos de sextorsión)
 - **LFPDPPP:** Protección de datos personales de menores
 

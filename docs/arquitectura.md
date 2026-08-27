@@ -13,7 +13,7 @@ flowchart TB
     subgraph BACKEND[Backend Core · FastAPI :8000]
         direction TB
         Pipe[Pipeline]
-        H[Layer 1<br/>Heuristic 900 patrones<br/>(F1 299 · F2 192 · F3 236 · F4 173)]
+        H[Layer 1<br/>Heuristic 900 patrones<br/>(F1 299 · F2 190 · F3 236 · F4 175)]
         L[Layer 2<br/>claude-sonnet-4-5<br/>5s timeout · zona gris 0.3-0.6]
         STT[Layer Audio<br/>Groq Whisper-large-v3]
         OCR_L[Layer Imagen<br/>Claude Vision]
@@ -24,7 +24,7 @@ flowchart TB
     end
 
     subgraph INFRA[Infra · DigitalOcean 159.223.187.6]
-        Nginx[Nginx :80<br/>rate limit + security headers<br/>+ static panel]
+        Nginx[Caddy :80/:443<br/>rate limit + security headers<br/>+ static panel]
         SystemD[systemd<br/>nahual-backend + nahual-bot]
     end
 
@@ -97,7 +97,7 @@ flowchart LR
     N --> P3[Fase 3<br/>Coerción]
     N --> P4[Fase 4<br/>Explotación]
     N --> EM[Emojis narco<br/>boost por afinidad]
-    N --> BAY[Capa 1.5<br/>Naive Bayes<br/>n-gramas 1-3<br/>911 docs]
+    N --> BAY[Capa 1.5<br/>Naive Bayes<br/>n-gramas 1-3<br/>1031 docs]
     EM --> P1
     EM --> P2
     EM --> P3

@@ -102,7 +102,7 @@ Las autoridades deben adoptar medidas especiales de protección para NNA que sea
 
 "Comete el delito de reclutamiento ilícito, el que enliste, reclute u obligue a participar directa o indirectamente en las hostilidades o en acciones armadas, a personas menores de dieciocho años de edad. Por tal delito se impondrán de nueve a dieciocho años de prisión y de mil a dos mil quinientos días de multa."
 
-**Estado legislativo:** Esta tipificación ha sido propuesta en múltiples iniciativas (2021, 2022, 2025). La Cámara de Diputados reformó el Código Penal en 2026 para incluir penas de hasta 18 años por reclutamiento de menores.
+**Estado legislativo:** Esta tipificación ha sido propuesta en múltiples iniciativas (2021, 2022, 2025). La Cámara de Diputados **aprobó** en marzo 2026 una reforma al Código Penal Federal que incluye penas de hasta 18 años por reclutamiento de menores (numeración propuesta: art. 209 Sextus). **Está pendiente de publicación en el DOF**, por lo que a esta fecha no es derecho vigente y Nahual la cita siempre marcada como *(propuesto)*.
 
 **Aplicación a Nahual:** Los reportes PDF generados por el sistema incluyen la referencia a esta tipificación. Cuando un menor genera un reporte de riesgo nivel PELIGRO con fase de coerción o explotación, el documento cita los artículos aplicables para que la Fiscalía pueda iniciar la investigación correspondiente.
 
